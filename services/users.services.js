@@ -53,4 +53,65 @@ async function auth(req,res){
     }
 
 }
-module.exports = {register,login,auth};
+async function facebook_login(req,res){
+    //check-user exist
+    let user = req.session.passport.user._json;
+    let query = "select id from users where email = ?";
+    let result = await sequelize.query(query,{
+        replacements : [user.email],
+        type : QueryTypes.SELECT
+    })
+    if(result.length>0){
+        let payload ={
+            id : result[0].id
+        }
+        let token = jwt.sign(payload,process.env.SECRET_KEY)
+        res.json({'access_token':token})
+
+    }
+    else{
+        query = "insert into users (name, email) values (?,?)"
+        let data =await sequelize.query(query,
+            {
+                replacements:[user.first_name.concat(" ",user.last_name),user.email],
+                type : QueryTypes.INSERT
+            })
+        let payload ={
+            id : data[0]
+        }
+        let token = jwt.sign(payload,process.env.SECRET_KEY)
+        res.json({'access_token':token})
+    }
+}
+async function google_login(req,res){
+    //check-user exist
+    let user = req.session.passport.user;
+    let query = "select id from users where email = ?";
+    let result = await sequelize.query(query,{
+        replacements : [user.emails[0].value],
+        type : QueryTypes.SELECT
+    })
+    if(result.length>0){
+        let payload ={
+            id : result[0].id
+        }
+        let token = jwt.sign(payload,process.env.SECRET_KEY)
+        res.json({'access_token':token})
+
+    }
+    else{
+        query = "insert into users (name, email) values (?,?)"
+        let data =await sequelize.query(query,
+            {
+                replacements:[user.displayName,user.emails[0].value],
+                type : QueryTypes.INSERT
+            })
+        let payload ={
+            id : data[0]
+        }
+        let token = jwt.sign(payload,process.env.SECRET_KEY)
+        res.json({'access_token':token})
+    }
+
+}
+module.exports = {register,login,auth,facebook_login,google_login};
