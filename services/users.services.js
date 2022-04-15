@@ -2,6 +2,7 @@ const sequelize = require("../sequelize/sequelize");
 const { QueryTypes } = require('sequelize');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const verify_phone = require("../phone-verification-twilio/twilio");
 async function register(req,res){
     let query="insert into users (name,email,phone,password) values(?,?,?,?)";
     req.body.password = await bcrypt.hash(req.body.password,10);
@@ -114,4 +115,8 @@ async function google_login(req,res){
     }
 
 }
-module.exports = {register,login,auth,facebook_login,google_login};
+async function phone_login(req,res){
+    let phone_number = req.query.phone_number.trim();
+    verify_phone(phone_number);
+}
+module.exports = {register,login,auth,facebook_login,google_login,phone_login};
