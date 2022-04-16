@@ -5,23 +5,6 @@ const authToken = process.env.TWILIO_AUTH_TOKEN;
 
 const client = require('twilio')(accountSid, authToken);
 
-
-function send(phone_nummber){
-    return client.messages
-        .create({
-            body: `Your OTP Verification code is : ${Math.floor(Math.random()*1000)} `,
-            from: '+16073005522',
-            to: '+'.concat(phone_nummber)
-          })
-         .then(async message =>{
-             let code = message.body.match(/\d/g).join('');
-             let query = "insert into otp (id,userId) values(?,?)"
-             await sequelize.query(query,[code,data.id])
-             
-         });
-}
-
-
 async function send_otp(phone_nummber){
     phone_nummber = '+'.concat(phone_nummber)
     try {
