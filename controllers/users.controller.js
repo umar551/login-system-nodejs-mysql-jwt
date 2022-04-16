@@ -17,5 +17,6 @@ router.get('/login-with-facebook',passport.authenticate("facebook"));
 router.get('/auth/facebook',passport.authenticate("facebook"),_userService.facebook_login);
 router.get('/login-with-google',passport.authenticate("google"));
 router.get('/auth/google',passport.authenticate("google"),_userService.google_login);
-router.get('/phone-verification',_userService.phone_login)
+router.get('/send-otp',_userService.send_otp)
+router.get('/verify-otp',_userService.verify_otp)
 module.exports = router;

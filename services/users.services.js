@@ -2,7 +2,7 @@ const sequelize = require("../sequelize/sequelize");
 const { QueryTypes } = require('sequelize');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const verify_phone = require("../phone-verification-twilio/twilio");
+const _twilioService = require("../phone-verification-twilio/twilio");
 async function register(req,res){
     let query="insert into users (name,email,phone,password) values(?,?,?,?)";
     req.body.password = await bcrypt.hash(req.body.password,10);
@@ -115,8 +115,35 @@ async function google_login(req,res){
     }
 
 }
-async function phone_login(req,res){
+async function send_otp(req,res){
     let phone_number = req.query.phone_number.trim();
-    verify_phone(phone_number);
+    let data =await _twilioService.send_otp(phone_number);
+    return res.send(data);
 }
-module.exports = {register,login,auth,facebook_login,google_login,phone_login};
+async function verify_otp(req,res){
+    let phone_number = req.query.phone_number.trim();
+    let code = req.query.code.trim();
+    let data =await _twilioService.verify_otp(phone_number,code);
+    if (data.valid){
+        let result = await sequelize.query('select id from users where phone =?',{
+            replacements:['+'.concat(phone_number)],
+            type : QueryTypes.SELECT
+        })
+        if(result.length>0){
+            let payload ={
+                id : result[0].id
+            }
+            let token = jwt.sign(payload,process.env.SECRET_KEY)
+            res.send({'access_token':token})
+        }
+        else{
+            res.send({
+                'message':'Phone not found'
+            })
+        }
+    }
+    else{
+        res.send(data)
+    }
+}
+module.exports = {register,login,auth,facebook_login,google_login,send_otp,verify_otp};
