@@ -19,4 +19,5 @@ router.get('/login-with-google',passport.authenticate("google"));
 router.get('/auth/google',passport.authenticate("google"),_userService.google_login);
 router.get('/send-otp',_userService.send_otp)
 router.get('/verify-otp',_userService.verify_otp)
+router.get('/send-email',_userService.send_email)
 module.exports = router;

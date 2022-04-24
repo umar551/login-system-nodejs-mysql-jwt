@@ -3,6 +3,7 @@ const { QueryTypes } = require('sequelize');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const _twilioService = require("../phone-verification-twilio/twilio");
+const sendmail = require("../nodemailer/nodemailer");
 async function register(req,res){
     let query="insert into users (name,email,phone,password) values(?,?,?,?)";
     req.body.password = await bcrypt.hash(req.body.password,10);
@@ -146,4 +147,8 @@ async function verify_otp(req,res){
         res.send(data)
     }
 }
-module.exports = {register,login,auth,facebook_login,google_login,send_otp,verify_otp};
+async function send_email(req,res){
+    let data =await sendmail();
+    res.send(data)
+}
+module.exports = {register,login,auth,facebook_login,google_login,send_otp,verify_otp,send_email};
